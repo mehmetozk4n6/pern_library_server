@@ -1,9 +1,10 @@
 const express = require("express");
-const exphbs = require("express-handlebars");
 const path = require("path");
 
 // Database
 const sequelize = require("./server/db");
+const Bulk = require("./server/db/Bulk");
+const Book = require("./server/db/models/book");
 
 // Test DB
 sequelize
@@ -21,12 +22,22 @@ app.get("/", (req, res) => {
   res.send("INDEX");
 });
 
-// Book routes
+// Controllers
 app.use("/books", require("./server/controllers/bookController"));
+app.use("/authors", require("./server/controllers/authorController"));
+app.use("/categories", require("./server/controllers/categoryController"));
+app.use("/publishers", require("./server/controllers/publisherController"));
 
 sequelize
   .sync()
-  .then((result) => console.log(result))
+  .then(() => {
+    Book.count().then((count) => {
+      if (count === 0) {
+        Bulk();
+      }
+    });
+    console.log("All models were synchronized successfully.");
+  })
   .catch((err) => console.log(err));
 
 const PORT = process.env.PORT || 5000;

@@ -1,63 +1,135 @@
 const express = require("express");
-
+const Author = require("../db/models/author");
 const router = express.Router();
-
 const Book = require("../db/models/book");
-const Sequelize = require("sequelize");
-const Op = Sequelize.Op;
+const Category = require("../db/models/category");
+const Publisher = require("../db/models/publisher");
+// const Sequelize = require("sequelize");
+// const Op = Sequelize.Op;
 
 // Get books
+
 router.get("/", async (req, res) => {
   try {
     const results = await Book.findAll({
-      attributes: ["title", "description"],
+      include: [{ model: Category }, { model: Author }, { model: Publisher }],
     });
-    console.log(results);
     res.status(200).json({
       status: "success",
-      results: results.rows.length,
       data: {
-        books: results[rows],
+        books: results,
       },
     });
   } catch (err) {
-    console.log(err);
+    res.json({
+      error: err.errors.map((error) => error.message).join("-----"),
+    });
+  }
+});
+
+// Get a book
+
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const results = await Book.findByPk(id);
+    res.status(200).json({
+      status: "success",
+      data: {
+        book: results,
+      },
+    });
+  } catch (err) {
+    res.json({
+      error: err.errors.map((error) => error.message).join("-----"),
+    });
   }
 });
 
 // Add a book
 
-router.post("/add", (req, res) => {
-  let { title, description } = req.body;
-  let errors = [];
-
-  // Validate Fields
-  if (!title) {
-    errors.push({ text: "Please add a title" });
-  }
-
-  if (errors.length > 0) {
-    res.redirect("/");
-  } else {
-    // Insert into table
-    Book.create({
+router.post("/", async (req, res) => {
+  try {
+    const { title, description, categoryId, publisherId, authorId } = req.body;
+    const results = await Book.create({
       title,
-      createdAt: Date.now(),
       description,
-    })
-      .then((book) => res.redirect("/"))
-      .catch((err) => console.log(err));
+      categoryId,
+      publisherId,
+      authorId,
+    });
+    res.status(201).json({
+      status: "created",
+      data: results,
+    });
+  } catch (err) {
+    res.json({
+      error: err.errors.map((error) => error.message).join("----"),
+    });
+  }
+});
+
+// Update a book
+
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, categoryId, publisherId, authorId } = req.body;
+    const results = await Book.findByPk(id);
+    if (title) {
+      results.title = title;
+    }
+    if (description) {
+      results.description = description;
+    }
+    if (categoryId) {
+      results.categoryId = categoryId;
+    }
+    if (publisherId) {
+      results.publisherId = publisherId;
+    }
+    if (authorId) {
+      results.authorId = authorId;
+    }
+    await results.save();
+    res.status(200).json({
+      status: "success",
+      data: {
+        book: results,
+      },
+    });
+  } catch (err) {
+    res.json({
+      error: err.errors.map((error) => error.message).join("-----"),
+    });
+  }
+});
+
+// Delete a book
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const results = await Book.findByPk(id);
+    await results.destroy();
+    res.status(204).json({
+      status: "success",
+    });
+  } catch (err) {
+    res.json({
+      error: err.errors.map((error) => error.message).join("-----"),
+    });
   }
 });
 
 // Search for books
-router.get("/search", (req, res) => {
-  const { term } = req.query;
+// router.get("/search", (req, res) => {
+//   const { term } = req.query;
 
-  term.toLocaleLowerCase();
-  Book.findAll({ where: { title: { [Op.like]: `%${term}%` } } })
-    .then((books) => res.render("/", { books }))
-    .catch((err) => console.log(err));
-});
+//   term.toLocaleLowerCase();
+//   Book.findAll({ where: { title: { [Op.like]: `%${term}%` } } })
+//     .then((books) => res.render("/", { books }))
+//     .catch((err) => console.log(err));
+// });
 
 module.exports = router;

@@ -24,9 +24,7 @@ const Book = sequelize.define("books", {
   },
 });
 
-Book.belongsTo(Publisher, {
-  allowNull: false,
-});
+Book.belongsTo(Publisher);
 Publisher.hasMany(Book);
 
 Book.belongsTo(Category);
