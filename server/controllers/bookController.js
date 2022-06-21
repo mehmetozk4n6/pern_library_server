@@ -4,26 +4,33 @@ const router = express.Router();
 const Book = require("../db/models/book");
 const Category = require("../db/models/category");
 const Publisher = require("../db/models/publisher");
-// const Sequelize = require("sequelize");
-// const Op = Sequelize.Op;
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
 
 // Get books
 
 router.get("/", async (req, res) => {
   try {
+    const page = req.query.page || 1;
+    const booksPerPage = 5;
+    const totalBooks = await Book.count();
     const results = await Book.findAll({
       include: [{ model: Category }, { model: Author }, { model: Publisher }],
+      offset: (page - 1) * booksPerPage,
+      limit: booksPerPage,
     });
+
     res.status(200).json({
       status: "success",
+      results: results.length,
       data: {
         books: results,
+        current: page,
+        pages: Math.ceil(totalBooks / booksPerPage),
       },
     });
   } catch (err) {
-    res.json({
-      error: err.errors.map((error) => error.message).join("-----"),
-    });
+    console.log(err);
   }
 });
 
@@ -40,9 +47,10 @@ router.get("/:id", async (req, res) => {
       },
     });
   } catch (err) {
-    res.json({
-      error: err.errors.map((error) => error.message).join("-----"),
-    });
+    console.log(err);
+    // res.json({
+    //   error: err.errors.map((error) => error.message).join("-----"),
+    // });
   }
 });
 
@@ -122,14 +130,14 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// Search for books
-// router.get("/search", (req, res) => {
-//   const { term } = req.query;
-
-//   term.toLocaleLowerCase();
-//   Book.findAll({ where: { title: { [Op.like]: `%${term}%` } } })
-//     .then((books) => res.render("/", { books }))
-//     .catch((err) => console.log(err));
-// });
+router.post("/search", (req, res) => {
+  const { page } = req.query;
+  const { term } = req.body;
+  console.log(page);
+  term.toLocaleLowerCase();
+  Book.findAll({ where: { title: { [Op.like]: `%${term}%` } } })
+    .then((books) => res.json({ data: books }))
+    .catch((err) => console.log(err));
+});
 
 module.exports = router;
