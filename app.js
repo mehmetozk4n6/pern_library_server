@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+var cors = require("cors");
 
 // Database
 const sequelize = require("./server/db");
@@ -15,6 +16,7 @@ sequelize
 const app = express();
 
 // Middleware
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
