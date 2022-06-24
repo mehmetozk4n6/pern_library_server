@@ -27,6 +27,7 @@ router.get("/", async (req, res) => {
         books: results,
         current: page,
         pages: Math.ceil(totalBooks / booksPerPage),
+        totalBooks,
       },
     });
   } catch (err) {
