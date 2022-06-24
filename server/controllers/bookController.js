@@ -131,9 +131,9 @@ router.delete("/:id", async (req, res) => {
 });
 
 router.post("/search", (req, res) => {
-  const { page } = req.query;
+  const page = req.query.page || 1;
+  const booksPerPage = 5;
   const { term } = req.body;
-  console.log(page);
   term.toLocaleLowerCase();
   Book.findAll({ where: { title: { [Op.like]: `%${term}%` } } })
     .then((books) => res.json({ data: books }))
