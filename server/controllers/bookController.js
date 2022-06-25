@@ -12,12 +12,16 @@ const Op = Sequelize.Op;
 router.get("/", async (req, res) => {
   try {
     const page = req.query.page || 1;
+    const term = req.query.searchtext;
+    const order = req.query.order;
     const booksPerPage = 5;
     const totalBooks = await Book.count();
     const results = await Book.findAll({
-      include: [{ model: Category }, { model: Author }, { model: Publisher }],
-      offset: (page - 1) * booksPerPage,
       limit: booksPerPage,
+      offset: (parseInt(page) - 1) * booksPerPage,
+      where: { title: { [Op.iLike]: `%${term}%` } },
+      include: [{ model: Category }, { model: Author }, { model: Publisher }],
+      order: [["createdAt", order]],
     });
 
     res.status(200).json({
@@ -25,9 +29,10 @@ router.get("/", async (req, res) => {
       results: results.length,
       data: {
         books: results,
-        current: page,
+        current: parseInt(page),
         pages: Math.ceil(totalBooks / booksPerPage),
         totalBooks,
+        offset: (parseInt(page) - 1) * booksPerPage,
       },
     });
   } catch (err) {
@@ -127,7 +132,7 @@ router.post("/search", (req, res) => {
   const booksPerPage = 5;
   const { term } = req.body;
   term.toLocaleLowerCase();
-  Book.findAll({ where: { title: { [Op.like]: `%${term}%` } } })
+  Book.findAll({ where: { title: { [Op.iLike]: `%${term}%` } } })
     .then((books) => res.json({ data: books }))
     .catch((err) => console.log(err));
 });
