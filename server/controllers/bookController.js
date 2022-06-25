@@ -49,9 +49,6 @@ router.get("/:id", async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    // res.json({
-    //   error: err.errors.map((error) => error.message).join("-----"),
-    // });
   }
 });
 
@@ -72,9 +69,7 @@ router.post("/", async (req, res) => {
       data: results,
     });
   } catch (err) {
-    res.json({
-      error: err.errors.map((error) => error.message).join("----"),
-    });
+    console.log(err);
   }
 });
 
@@ -108,9 +103,7 @@ router.put("/:id", async (req, res) => {
       },
     });
   } catch (err) {
-    res.json({
-      error: err.errors.map((error) => error.message).join("-----"),
-    });
+    console.log(err);
   }
 });
 
@@ -125,9 +118,7 @@ router.delete("/:id", async (req, res) => {
       status: "success",
     });
   } catch (err) {
-    res.json({
-      error: err.errors.map((error) => error.message).join("-----"),
-    });
+    console.log(err);
   }
 });
 
