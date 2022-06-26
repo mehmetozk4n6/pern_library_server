@@ -127,14 +127,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/search", (req, res) => {
-  const page = req.query.page || 1;
-  const booksPerPage = 5;
-  const { term } = req.body;
-  term.toLocaleLowerCase();
-  Book.findAll({ where: { title: { [Op.iLike]: `%${term}%` } } })
-    .then((books) => res.json({ data: books }))
-    .catch((err) => console.log(err));
-});
-
 module.exports = router;
